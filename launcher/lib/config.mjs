@@ -18,7 +18,7 @@ export const LOG_FILE = path.join(ROOT, 'launcher.log');
 /** Default game install directory: `<launcher>/game`. */
 export const DEFAULT_INSTALL_DIR = path.join(ROOT, 'game');
 
-export const REPO_SLUG = '16626999910/Stronghold-Protocol';
+export const REPO_SLUG = 'bin-g-ice/Stronghold-Protocol';
 export const REPO_URL = `https://github.com/${REPO_SLUG}`;
 export const BRANCH = 'main';
 
@@ -27,7 +27,7 @@ export const BRANCH = 'main';
  * purpose: an SSH remote (`git@github.com:…`) would only work for the machine that owns the key,
  * so nobody else could ever auto-update.
  */
-export const SELF_REPO_SLUG = '16626999910/Stronghold-Protocol-Server-Launcher';
+export const SELF_REPO_SLUG = 'bin-g-ice/Stronghold-Protocol-Server-Launcher';
 export const SELF_REPO_URL = `https://github.com/${SELF_REPO_SLUG}`;
 
 /**
