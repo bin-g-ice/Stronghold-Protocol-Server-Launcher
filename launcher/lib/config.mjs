@@ -20,7 +20,7 @@ export const DEFAULT_INSTALL_DIR = path.join(ROOT, 'game');
 
 export const REPO_SLUG = 'bin-g-ice/Stronghold-Protocol';
 export const REPO_URL = `https://github.com/${REPO_SLUG}`;
-export const BRANCH = 'main';
+export const BRANCH = 'master';
 
 /**
  * The launcher's *own* repository, used for self-update. A public HTTPS URL is the default on
