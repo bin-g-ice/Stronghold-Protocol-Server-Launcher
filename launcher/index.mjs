@@ -7,6 +7,7 @@
 // monitors the server, and keeps it up to date. Closing the console (Ctrl+C) stops both
 // the launcher and the game server it started.
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { createHttpServer } from './lib/httpd.mjs';
@@ -14,7 +15,7 @@ import { EventBus, LogStore, CHANNELS } from './lib/events.mjs';
 import { TaskRunner } from './lib/tasks.mjs';
 import { GameServer, probePort } from './lib/game.mjs';
 import {
-  loadConfig, patchConfig, allPresets, sourceById, assetRouteOf, SOURCES, ROOT, BUILTIN_PRESETS, installDirOf,
+  loadConfig, patchConfig, allPresets, sourceById, assetRouteOf, SOURCES, ROOT, BUILTIN_PRESETS, installDirOf, LOG_FILE,
 } from './lib/config.mjs';
 import {
   inspectInstall, installFromSource, updateFromSource, npmCommand, gitCommand, gameDir, parseChangelog, gitInfo,
@@ -510,6 +511,44 @@ const actions = {
     const r = await game.restart();
     emitState();
     return r;
+  },
+
+  /**
+   * 一键卸载：停掉服务器 → 删除安装目录（游戏本体 / node_modules / 素材 / 运行期数据）+ 模组缓存/锁定 + 日志。
+   * `deep: true` 连便携 Node 运行时（runtime/node，.bat bootstrap 解出来的）也一起删。启动器本身（launcher/ 与代码）保留。
+   * 安全：安装目录解析后若等于启动器根目录 / 盘符根 / 过短，则拒绝删除。
+   */
+  async uninstall(opts = {}) {
+    const deep = opts && opts.deep === true;
+    const dir = path.resolve(gameDir(config));
+    const rootResolved = path.resolve(ROOT);
+    if (dir === rootResolved || dir === path.parse(dir).root || dir.length < 4 || rootResolved.startsWith(dir + path.sep)) {
+      log({ channel: 'launcher', stream: 'stderr', line: `拒绝删除不安全的安装目录：${dir}` });
+      return { ok: false, error: `安装目录不合法，已拒绝删除：${dir}` };
+    }
+    log({ channel: 'launcher', stream: 'meta', line: `▶ 一键卸载：停止服务器并删除 ${dir} 及残留…` });
+    try { await game.stop(); } catch { /* ignore */ }
+    const removed = [];
+    const rm = (p, label) => {
+      try {
+        if (!exists(p)) return false;
+        fs.rmSync(p, { recursive: true, force: true });
+        removed.push(p);
+        log({ channel: 'launcher', stream: 'stdout', line: `  ✔ 已删除 ${label || p}` });
+        return true;
+      } catch (e) {
+        log({ channel: 'launcher', stream: 'stderr', line: `  ✘ 删除失败 ${p}：${e.message}` });
+        return false;
+      }
+    };
+    rm(dir, '安装目录');
+    rm(path.join(ROOT, '.cache'), '模组缓存 / 下载 / 锁定');   // CACHE_DIR / LOCK_FILE / DOWNLOAD_DIR 都在这里
+    rm(LOG_FILE, '日志 launcher.log');
+    if (deep) rm(path.join(ROOT, 'runtime', 'node'), '便携 Node 运行时');
+    clearLock();
+    refreshInstall();
+    emitState();
+    return { ok: true, removed, installDir: dir };
   },
 
   open(target) {
