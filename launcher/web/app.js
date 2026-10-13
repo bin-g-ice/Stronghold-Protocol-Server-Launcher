@@ -318,6 +318,7 @@ function renderHome() {
   $('#btn-start').disabled = !install.ready || running || busy;
   $('#btn-stop').disabled = !running || busy;
   $('#btn-restart').disabled = !install.ready || busy;
+  $('#btn-uninstall').disabled = !install.hasPackageJson || busy;
   $('#btn-cancel').hidden = task.status !== 'running';
   $$('[data-deploy]').forEach((b) => { b.disabled = task.status === 'running' || (b.dataset.deploy !== 'doctor' && !install.hasPackageJson); });
 
@@ -850,6 +851,15 @@ function wire() {
   $('#btn-start').addEventListener('click', () => doServer('/api/server/start'));
   $('#btn-stop').addEventListener('click', () => doServer('/api/server/stop'));
   $('#btn-restart').addEventListener('click', () => doServer('/api/server/restart'));
+  $('#btn-uninstall').addEventListener('click', async () => {
+    const ok = window.confirm('确定要一键删除已部署的服务器及其残留吗？\n\n将删除：\n· 安装目录（游戏本体 / node_modules / 素材 / 运行期数据）\n· 模组缓存与锁定\n· 日志\n\n启动器本身会保留；删除后需重新「一键部署」。');
+    if (!ok) return;
+    try {
+      const r = await api('/api/uninstall', 'POST', {});
+      toast(r && r.removed ? `已删除 ${r.removed.length} 项（含安装目录与残留）` : '已删除服务器与残留', 'ok');
+      setTimeout(() => location.reload(), 700);
+    } catch (e) { toast(e.message, 'error'); }
+  });
   $('#btn-update').addEventListener('click', doUpdate);
   $('#btn-test-sources').addEventListener('click', testSources);
   $('#btn-cancel').addEventListener('click', () => api('/api/task/cancel', 'POST').catch(() => {}));
