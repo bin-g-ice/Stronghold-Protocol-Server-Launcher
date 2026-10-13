@@ -154,6 +154,9 @@ async function api(req, res, url, { getState, actions, logStore }) {
     case 'POST /api/server/restart':
       return sendJson(res, 200, await actions.serverRestart());
 
+    case 'POST /api/uninstall':
+      return sendJson(res, 200, await actions.uninstall(body));
+
     case 'POST /api/open':
       return sendJson(res, 200, actions.open(body?.target || 'game'));
 
