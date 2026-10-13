@@ -18,16 +18,16 @@ export const LOG_FILE = path.join(ROOT, 'launcher.log');
 /** Default game install directory: `<launcher>/game`. */
 export const DEFAULT_INSTALL_DIR = path.join(ROOT, 'game');
 
-export const REPO_SLUG = 'sganggs/Stronghold-Protocol';
+export const REPO_SLUG = '16626999910/Stronghold-Protocol';
 export const REPO_URL = `https://github.com/${REPO_SLUG}`;
-export const BRANCH = 'master';
+export const BRANCH = 'main';
 
 /**
  * The launcher's *own* repository, used for self-update. A public HTTPS URL is the default on
  * purpose: an SSH remote (`git@github.com:…`) would only work for the machine that owns the key,
  * so nobody else could ever auto-update.
  */
-export const SELF_REPO_SLUG = 'Starst796/Stronghold-Protocol-Server-Launcher';
+export const SELF_REPO_SLUG = '16626999910/Stronghold-Protocol-Server-Launcher';
 export const SELF_REPO_URL = `https://github.com/${SELF_REPO_SLUG}`;
 
 /**
